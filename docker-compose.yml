@@ -1,0 +1,40 @@
+services:
+
+  backend:
+    build: ./backend
+    container_name: mentale-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend/target:/app/target
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mentale
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=1234
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: mentale-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15
+    container_name: mentale-db
+    environment:
+      POSTGRES_DB: mentale
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

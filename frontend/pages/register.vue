@@ -22,16 +22,32 @@ const error = ref('')
 
 const register = async () => {
   error.value = ''
+  message.value = ''
   try {
     const response = await axios.post('http://localhost:8080/auth/register', {
       username: username.value,
       password: password.value
     })
-    message.value = response.data
+    // Verifica se a resposta é string ou objeto
+    if (typeof response.data === 'string') {
+      message.value = response.data
+    } else {
+      message.value = response.data.message || 'Cadastro realizado com sucesso'
+    }
   } catch (err) {
-    error.value = err.response?.data || 'Erro ao cadastrar'
+    const data = err.response?.data
+    if (typeof data === 'string') {
+      error.value = data
+    } else if (data?.error) {
+      error.value = data.error
+    } else if (typeof data === 'object') {
+      error.value = Object.values(data).join(', ')
+    } else {
+      error.value = 'Erro desconhecido ao cadastrar'
+    }
   }
 }
+
 </script>
 
 <style scoped>

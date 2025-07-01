@@ -4,7 +4,7 @@ services:
     build: ./backend
     container_name: mentale-backend
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mentale
       - SPRING_DATASOURCE_USERNAME=postgres

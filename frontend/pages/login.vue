@@ -33,7 +33,6 @@
           <a href="/register">Cadastre-se aqui</a>
         </p>
 
-        <p v-if="token" class="token">Token: {{ token }}</p>
         <p v-if="error" class="error">{{ error }}</p>
       </div>
     </div>
@@ -42,12 +41,12 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
-import '/assets/css/login.css'
 
+const router = useRouter() 
 const username = ref('')
 const password = ref('')
-const token = ref('')
 const error = ref('')
 
 const login = async () => {
@@ -56,12 +55,15 @@ const login = async () => {
     const response = await axios.post('http://localhost:8080/auth/login', {
       username: username.value,
       password: password.value
+    }, {
+      withCredentials: true 
     })
-    token.value = response.data.token
-    localStorage.setItem('token', token.value)
+
+    router.push('/home')
   } catch (err) {
-    error.value = err.response?.data || 'Erro ao autenticar'
+    error.value = err.response?.data?.error || 'Erro ao autenticar'
   }
 }
 </script>
+
 

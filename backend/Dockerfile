@@ -1,10 +1,11 @@
+# Usa imagem oficial do Java 17
 FROM eclipse-temurin:17-jdk
 
+# Define o diretório de trabalho no container
 WORKDIR /app
 
-# Copia o JAR do host para dentro do container
-COPY target/demo-0.0.1-SNAPSHOT.jar app.jar
+# Copia o JAR gerado pelo Maven
+COPY target/*.jar app.jar
 
-EXPOSE 8080
-
+# Executa o JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]

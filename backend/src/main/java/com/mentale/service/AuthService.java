@@ -21,15 +21,15 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    public String login(String username, String password) {
-        User user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new InvalidCredentialsException("Usuário ou senha inválidos"));
+    public String login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new InvalidCredentialsException("Email ou senha inválidos"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new InvalidCredentialsException("Usuário ou senha inválidos");
+            throw new InvalidCredentialsException("Email ou senha inválidos");
         }
 
-        return jwtUtil.generateToken(user.getUsername());
+        return jwtUtil.generateToken(user.getEmail());
     }
 
 }

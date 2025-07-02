@@ -17,12 +17,12 @@ public class UserService {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	public User register(String username, String password) {
-        if (userRepository.findByUsername(username).isPresent()) {
+	public User register(String email, String password) {
+        if (userRepository.findByEmail(email).isPresent()) {
             throw new UserAlreadyExistsException("Usuário já existe!");
         }
         User user = new User();
-        user.setUsername(username);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(password));
         return userRepository.save(user);
     }

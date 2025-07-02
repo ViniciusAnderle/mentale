@@ -34,9 +34,9 @@ public class AuthController {
 	public ResponseEntity<?> register(@Valid @RequestBody AuthRequest request) {
 		try {
 			Thread.sleep(500);
-			User user = userService.register(request.getUsername(), request.getPassword());
+			User user = userService.register(request.getEmail(), request.getPassword());
 			return ResponseEntity.ok()
-					.body(Map.of("message", "Usuário cadastrado com sucesso", "username", user.getUsername()));
+					.body(Map.of("message", "Usuário cadastrado com sucesso", "email", user.getEmail()));
 		} catch (UserAlreadyExistsException e) {
 			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
 		} catch (InterruptedException ie) {
@@ -50,7 +50,7 @@ public class AuthController {
 	public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request) {
 		try {
 			Thread.sleep(500); // Proteção simples contra brute-force
-			String token = authService.login(request.getUsername(), request.getPassword());
+			String token = authService.login(request.getEmail(), request.getPassword());
 
 			// Retornar o token como cookie HttpOnly
 			ResponseCookie cookie = ResponseCookie.from("jwt", token).httpOnly(true).secure(false) // Coloque true se
@@ -72,18 +72,18 @@ public class AuthController {
 	@Data
 	public static class AuthRequest {
 
-		@NotBlank(message = "Usuário é obrigatório")
-		private String username;
+		@NotBlank(message = "Email é obrigatório")
+		private String email;
 
 		@NotBlank(message = "Senha é obrigatória")
 		private String password;
 
-		public String getUsername() {
-			return username;
+		public String getEmail() {
+			return email;
 		}
 
-		public void setUsername(String username) {
-			this.username = username;
+		public void setEmail(String email) {
+			this.email = email;
 		}
 
 		public String getPassword() {

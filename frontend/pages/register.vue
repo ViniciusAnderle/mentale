@@ -19,6 +19,8 @@
         <p class="welcome">
           Cadastre-se na Mentale<br />e inicie sua jornada de cuidado emocional
         </p>
+
+        <!-- Google Login -->
         <client-only>
           <GoogleLogin :callback="handleGoogleLogin" />
         </client-only>
@@ -53,10 +55,12 @@
 
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
-import "/assets/css/login.css";
 import { GoogleLogin } from "vue3-google-login";
+import "/assets/css/login.css";
 
+const router = useRouter();
 const email = ref("");
 const password = ref("");
 const message = ref("");
@@ -65,12 +69,17 @@ const error = ref("");
 const register = async () => {
   error.value = "";
   message.value = "";
+
   try {
     const response = await axios.post("http://localhost:8080/auth/register", {
       email: email.value,
       password: password.value,
     });
+
     message.value = response.data.message || "Cadastro realizado com sucesso";
+
+    // Redireciona após sucesso
+    router.push("/home");
   } catch (err) {
     const data = err.response?.data;
     if (typeof data === "string") {
@@ -97,14 +106,15 @@ const handleGoogleLogin = async (response) => {
   try {
     const res = await axios.post(
       "http://localhost:8080/auth/oauth/google",
-      {
-        idToken,
-      },
+      { idToken },
       { withCredentials: true }
     );
 
     message.value =
       res.data.message || "Login com Google realizado com sucesso";
+
+    // Redireciona após sucesso
+    router.push("/home");
   } catch (err) {
     const data = err.response?.data;
     error.value = data?.error || "Erro ao logar com Google";

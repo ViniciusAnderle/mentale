@@ -5,6 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +19,8 @@ import com.mentale.model.User;
 import com.mentale.service.AuthService;
 import com.mentale.service.UserService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -94,6 +97,23 @@ public class AuthController {
 		} catch (Exception e) {
 			return ResponseEntity.status(401).body(Map.of("error", "Token Google inválido"));
 		}
+	}
+
+	@PostMapping("/logout")
+	public ResponseEntity<?> logout(HttpServletResponse response) {
+		// Invalida o cookie JWT
+		ResponseCookie cookie = ResponseCookie.from("jwt", "").httpOnly(true).secure(false).path("/").maxAge(0) // expira
+																												// imediatamente
+				.sameSite("Strict").build();
+
+		return ResponseEntity.ok().header("Set-Cookie", cookie.toString())
+				.body(Map.of("message", "Logout realizado com sucesso"));
+	}
+
+	@GetMapping("/check")
+	public ResponseEntity<?> checkSession(HttpServletRequest request) {
+		// Esse método só será chamado se o JwtAuthFilter validar o token
+		return ResponseEntity.ok(Map.of("status", "ok"));
 	}
 
 	@Data

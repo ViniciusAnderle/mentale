@@ -5,7 +5,7 @@ FROM eclipse-temurin:17-jdk
 WORKDIR /app
 
 # Copia o JAR gerado pelo Maven
-COPY target/*.jar app.jar
+
 
 # Executa o JAR
 ENTRYPOINT ["java", "-jar", "app.jar"]

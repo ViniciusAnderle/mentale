@@ -23,7 +23,7 @@
         </div>
 
         <form @submit.prevent="register">
-          <input v-model="username" type="text" placeholder="Usuário" required />
+          <input v-model="email" type="text" placeholder="Usuário" required />
           <input v-model="password" type="password" placeholder="Senha" required />
           <button type="submit">CADASTRAR</button>
         </form>
@@ -45,7 +45,7 @@ import { ref } from 'vue'
 import axios from 'axios'
 import '/assets/css/login.css'
 
-const username = ref('')
+const email = ref('')
 const password = ref('')
 const message = ref('')
 const error = ref('')
@@ -55,7 +55,7 @@ const register = async () => {
   message.value = ''
   try {
     const response = await axios.post('http://localhost:8080/auth/register', {
-      username: username.value,
+      email: email.value,
       password: password.value
     })
     if (typeof response.data === 'string') {

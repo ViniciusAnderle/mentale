@@ -23,7 +23,7 @@
         </div>
 
         <form @submit.prevent="login">
-          <input v-model="username" type="text" placeholder="Usuário" required />
+          <input v-model="email" type="text" placeholder="Usuário" required />
           <input v-model="password" type="password" placeholder="Senha" required />
           <button type="submit">ENTRAR</button>
         </form>
@@ -45,7 +45,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 
 const router = useRouter() 
-const username = ref('')
+const email = ref('')
 const password = ref('')
 const error = ref('')
 
@@ -53,7 +53,7 @@ const login = async () => {
   error.value = ''
   try {
     const response = await axios.post('http://localhost:8080/auth/login', {
-      username: username.value,
+      email: email.value,
       password: password.value
     }, {
       withCredentials: true 

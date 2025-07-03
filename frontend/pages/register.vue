@@ -11,17 +11,22 @@
         <div class="logo-container">
           <img src="assets/css/images/logo.png" alt="Mentale Logo" class="logo-image" />
         </div>
-        <p class="welcome">Cadastre-se na Mentale<br />e inicie sua jornada de cuidado emocional</p>
 
-        <button class="google-button">
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Icon" />
-          Entrar com Google
-        </button>
+        <p class="welcome">
+          Cadastre-se na Mentale<br />e inicie sua jornada de cuidado emocional
+        </p>
+    <client-only>
+  <GoogleLogin :callback="handleGoogleLogin" />
+</client-only>
+
+
+
 
         <div class="divider">
           <span>Ou cadastre com</span>
         </div>
 
+        <!-- Formulário de cadastro manual -->
         <form @submit.prevent="register">
           <input v-model="email" type="text" placeholder="Usuário" required />
           <input v-model="password" type="password" placeholder="Senha" required />
@@ -44,6 +49,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import '/assets/css/login.css'
+import { GoogleLogin } from 'vue3-google-login'
 
 const email = ref('')
 const password = ref('')
@@ -58,11 +64,7 @@ const register = async () => {
       email: email.value,
       password: password.value
     })
-    if (typeof response.data === 'string') {
-      message.value = response.data
-    } else {
-      message.value = response.data.message || 'Cadastro realizado com sucesso'
-    }
+    message.value = response.data.message || 'Cadastro realizado com sucesso'
   } catch (err) {
     const data = err.response?.data
     if (typeof data === 'string') {
@@ -76,4 +78,28 @@ const register = async () => {
     }
   }
 }
+
+const handleGoogleLogin = async (response) => {
+  console.log("Google response:", response)
+
+  const idToken = response?.credential
+  if (!idToken) {
+    error.value = 'Erro: Token Google ausente'
+    return
+  }
+
+  try {
+    const res = await axios.post('http://localhost:8080/auth/oauth/google', {
+      idToken
+    }, { withCredentials: true })
+
+    message.value = res.data.message || 'Login com Google realizado com sucesso'
+  } catch (err) {
+    const data = err.response?.data
+    error.value = data?.error || 'Erro ao logar com Google'
+  }
+}
+
+
+
 </script>

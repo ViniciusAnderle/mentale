@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.mentale.dto.GoogleAuthRequest;
 import com.mentale.exceptions.InvalidCredentialsException;
 import com.mentale.exceptions.UserAlreadyExistsException;
 import com.mentale.model.User;
@@ -66,6 +68,31 @@ public class AuthController {
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
 			return ResponseEntity.internalServerError().body(Map.of("error", "Erro interno inesperado"));
+		}
+	}
+
+	@PostMapping("/oauth/google")
+	public ResponseEntity<?> loginWithGoogle(@RequestBody GoogleAuthRequest request) {
+		String idToken = request.getIdToken();
+
+		try {
+			GoogleIdToken.Payload payload = authService.verifyGoogleToken(idToken);
+
+			String email = payload.getEmail();
+			String name = (String) payload.get("name");
+
+			User user = userService.findByEmail(email).orElseGet(() -> userService.registerOAuthUser(email, name));
+
+			String jwt = authService.generateToken(email);
+
+			ResponseCookie cookie = ResponseCookie.from("jwt", jwt).httpOnly(true).secure(false).path("/")
+					.maxAge(60 * 60).sameSite("Strict").build();
+
+			return ResponseEntity.ok().header("Set-Cookie", cookie.toString())
+					.body(Map.of("message", "Login via Google realizado com sucesso"));
+
+		} catch (Exception e) {
+			return ResponseEntity.status(401).body(Map.of("error", "Token Google inválido"));
 		}
 	}
 

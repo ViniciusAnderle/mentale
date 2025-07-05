@@ -27,17 +27,24 @@ public class AuthService {
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	/**
+	 * Login via e-mail e senha (qualquer tipo de usuário)
+	 */
 	public String login(String email, String password) {
 		User user = userRepository.findByEmail(email)
 				.orElseThrow(() -> new InvalidCredentialsException("Email ou senha inválidos"));
 
-		if (!passwordEncoder.matches(password, user.getPassword())) {
+		if (user.getPassword() == null || !passwordEncoder.matches(password, user.getPassword())) {
 			throw new InvalidCredentialsException("Email ou senha inválidos");
 		}
 
-		return jwtUtil.generateToken(user.getEmail());
+		// Agora usamos o generateToken com role
+		return jwtUtil.generateToken(user.getEmail(), user.getRole().name());
 	}
 
+	/**
+	 * Login via Google OAuth2
+	 */
 	public GoogleIdToken.Payload verifyGoogleToken(String idTokenString) throws Exception {
 		GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(GoogleNetHttpTransport.newTrustedTransport(),
 				GsonFactory.getDefaultInstance())
@@ -53,8 +60,10 @@ public class AuthService {
 		}
 	}
 
-	public String generateToken(String email) {
-		return jwtUtil.generateToken(email);
+	/**
+	 * Utilitário de geração direta de token (caso queira reaproveitar)
+	 */
+	public String generateToken(String email, String role) {
+		return jwtUtil.generateToken(email, role);
 	}
-
 }

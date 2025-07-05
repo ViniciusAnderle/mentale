@@ -21,11 +21,9 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable()
-				.authorizeHttpRequests(
-						auth -> auth.requestMatchers("/auth/login","/auth/logout",  "/auth/register", "/auth/oauth/google").permitAll()
-
-								.anyRequest().authenticated())
+		http.csrf().disable().authorizeHttpRequests(auth -> auth
+				.requestMatchers("/auth/login", "/auth/register", "/auth/logout", "/auth/oauth/google", "/auth/check")
+				.permitAll().anyRequest().authenticated())
 				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
@@ -36,3 +34,4 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 }
+

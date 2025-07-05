@@ -40,15 +40,23 @@ public class AuthController {
 		try {
 			Thread.sleep(500);
 			User user = userService.register(request.getEmail(), request.getPassword());
-			return ResponseEntity.ok()
+
+			// Gera token com role
+			String token = authService.generateToken(user.getEmail(), user.getRole().name());
+
+			ResponseCookie cookie = ResponseCookie.from("jwt", token).httpOnly(true).secure(false).path("/")
+					.maxAge(60 * 60) // 1 hora
+					.sameSite("Strict").build();
+
+			return ResponseEntity.ok().header("Set-Cookie", cookie.toString())
 					.body(Map.of("message", "Usuário cadastrado com sucesso", "email", user.getEmail()));
+
 		} catch (UserAlreadyExistsException e) {
 			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
 		} catch (InterruptedException ie) {
 			Thread.currentThread().interrupt();
 			return ResponseEntity.internalServerError().body(Map.of("error", "Erro interno inesperado."));
 		}
-
 	}
 
 	@PostMapping("/login")
@@ -57,15 +65,12 @@ public class AuthController {
 			Thread.sleep(500); // Proteção simples contra brute-force
 			String token = authService.login(request.getEmail(), request.getPassword());
 
-			// Retornar o token como cookie HttpOnly
-			ResponseCookie cookie = ResponseCookie.from("jwt", token).httpOnly(true).secure(false) // Coloque true se
-																									// estiver usando
-																									// HTTPS
-					.path("/").maxAge(60 * 60) // 1 hora
-					.sameSite("Strict").build();
+			ResponseCookie cookie = ResponseCookie.from("jwt", token).httpOnly(true).secure(false).path("/")
+					.maxAge(60 * 60).sameSite("Strict").build();
 
 			return ResponseEntity.ok().header("Set-Cookie", cookie.toString())
 					.body(Map.of("message", "Login realizado com sucesso"));
+
 		} catch (InvalidCredentialsException e) {
 			return ResponseEntity.status(401).body(Map.of("error", e.getMessage()));
 		} catch (InterruptedException ie) {
@@ -80,13 +85,14 @@ public class AuthController {
 
 		try {
 			GoogleIdToken.Payload payload = authService.verifyGoogleToken(idToken);
-
 			String email = payload.getEmail();
 			String name = (String) payload.get("name");
 
+			// Cadastra ou busca
 			User user = userService.findByEmail(email).orElseGet(() -> userService.registerOAuthUser(email, name));
 
-			String jwt = authService.generateToken(email);
+			// Gera token com role do usuário
+			String jwt = authService.generateToken(user.getEmail(), user.getRole().name());
 
 			ResponseCookie cookie = ResponseCookie.from("jwt", jwt).httpOnly(true).secure(false).path("/")
 					.maxAge(60 * 60).sameSite("Strict").build();
@@ -101,9 +107,7 @@ public class AuthController {
 
 	@PostMapping("/logout")
 	public ResponseEntity<?> logout(HttpServletResponse response) {
-		// Invalida o cookie JWT
-		ResponseCookie cookie = ResponseCookie.from("jwt", "").httpOnly(true).secure(false).path("/").maxAge(0) // expira
-																												// imediatamente
+		ResponseCookie cookie = ResponseCookie.from("jwt", "").httpOnly(true).secure(false).path("/").maxAge(0)
 				.sameSite("Strict").build();
 
 		return ResponseEntity.ok().header("Set-Cookie", cookie.toString())
@@ -112,7 +116,6 @@ public class AuthController {
 
 	@GetMapping("/check")
 	public ResponseEntity<?> checkSession(HttpServletRequest request) {
-		// Esse método só será chamado se o JwtAuthFilter validar o token
 		return ResponseEntity.ok(Map.of("status", "ok"));
 	}
 
@@ -126,20 +129,15 @@ public class AuthController {
 		private String password;
 
 		public String getEmail() {
+			// TODO Auto-generated method stub
 			return email;
 		}
 
-		public void setEmail(String email) {
-			this.email = email;
-		}
-
 		public String getPassword() {
+			// TODO Auto-generated method stub
 			return password;
 		}
-
-		public void setPassword(String password) {
-			this.password = password;
-		}
-
 	}
+
+
 }
